@@ -1,7 +1,9 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <fstream>
-#include <type_traits>
+#include <cstdlib> // needed to import rand() and srand()
+#include <ctime> // needed to import time()
+#include <vector> // load vector type to store all the shapes
 
 
 int main()
@@ -11,20 +13,51 @@ int main()
     const int WINDOW_HEIGHT = 720;
     const int WINDOW_FPS = 60;
     const float CIRCLE_RADIUS = 25.0f;
-    float PLAYER_SPEED_X = 1.5f;
-    float PLAYER_SPEED_Y = 1.5f;
-
+    float SPEED_X = 2.5f;
+    float SPEED_Y = 2.5f;
+    const float SHAPES[] = {80.0f, 90.0f, 100.0f, 120.0f, 150.0f, 180.0f, 200.0f, 220.0f, 250.0f};
+    
+    // get the size of the array, this is useful for random sampling
+    const size_t sizeShapesArray = sizeof(SHAPES) / sizeof(SHAPES[0]);
+    
+    std::vector<sf::Shape*> entities; // vector of type Shape, to store all the possible shape types.
 
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Assignment 1");
 
     // set window frame rate
     window.setFramerateLimit(WINDOW_FPS);
 
-    // create the player
-    sf::CircleShape player(CIRCLE_RADIUS);
-    player.setFillColor(sf::Color::Green);
-    player.setPosition(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f);
-    player.setOrigin(CIRCLE_RADIUS, CIRCLE_RADIUS);
+    // create the players
+    sf::CircleShape* player = new sf::CircleShape(CIRCLE_RADIUS);
+    player->setFillColor(sf::Color::Green);
+    player->setPosition(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f);
+    player->setOrigin(CIRCLE_RADIUS, CIRCLE_RADIUS);
+    entities.push_back(player);
+
+    // set random seed based on current second
+    std::srand(time(NULL));
+
+    // use the remainder operator to get the index
+    float randX = SHAPES[std::rand() % sizeShapesArray];
+    float randY = SHAPES[std::rand() % sizeShapesArray];
+    sf::RectangleShape* shape1 = new sf::RectangleShape(sf::Vector2f(randX, randY));
+    shape1->setFillColor(sf::Color::Blue);
+    entities.push_back(shape1);
+
+    float randomShapeTriangle = SHAPES[std::rand() % sizeShapesArray];
+    sf::CircleShape* triangle = new sf::CircleShape(randomShapeTriangle, 3);
+    triangle->setFillColor(sf::Color::Green);
+    entities.push_back(triangle);
+
+    float randomShapePentagon = SHAPES[std::rand() % sizeShapesArray];
+    sf::CircleShape* pentagon = new sf::CircleShape(randomShapePentagon, 5);
+    pentagon->setFillColor(sf::Color::Red);
+    entities.push_back(pentagon);
+
+    float randomShapeOctagon = SHAPES[std::rand() % sizeShapesArray];
+    sf::CircleShape* octagon = new sf::CircleShape(randomShapeOctagon, 8);
+    octagon->setFillColor(sf::Color::Yellow);
+    entities.push_back(octagon);
 
     // main game loop
     while (window.isOpen())
@@ -47,21 +80,14 @@ int main()
             if (event.type == sf::Keyboard::D)
                 continue;
         }
-        
-        // update player's position
-        player.setPosition(player.getPosition().x + PLAYER_SPEED_X, player.getPosition().y + PLAYER_SPEED_Y);
-
-        if (player.getPosition().x + CIRCLE_RADIUS >= WINDOW_WIDTH || player.getPosition().x - CIRCLE_RADIUS < 0)
-            PLAYER_SPEED_X *= -1;
-        
-        if (player.getPosition().y + CIRCLE_RADIUS >= WINDOW_HEIGHT || player.getPosition().y - CIRCLE_RADIUS < 0)
-            PLAYER_SPEED_Y *= -1;
 
         // clear window
         window.clear(sf::Color::Black);
-
-        // render scene
-        window.draw(player);
+        for (auto &e: entities)
+        {
+            e->setPosition(e->getPosition().x + SPEED_X, e->getPosition().y + SPEED_Y);
+            window.draw(*e);
+        }
 
         // display scene
         window.display();
